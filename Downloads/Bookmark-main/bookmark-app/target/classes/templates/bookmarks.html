@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ブックマーク一覧</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>📚 ブックマーク管理</h1>
+            <div class="user-info">
+                <span th:text="${username}"></span>
+                <form th:action="@{/logout}" method="post" style="display:inline;">
+                    <button type="submit" class="btn btn-secondary">ログアウト</button>
+                </form>
+            </div>
+        </header>
+        
+        <div class="toolbar">
+            <a th:href="@{/bookmarks/new}" class="btn btn-primary">+ 新規ブックマーク</a>
+            
+            <div class="sort-options">
+                <label>並び替え:</label>
+                <a th:href="@{/bookmarks(sort='newest')}" 
+                   th:class="${currentSort == 'newest'} ? 'btn btn-sort active' : 'btn btn-sort'">
+                    新しい順
+                </a>
+                <a th:href="@{/bookmarks(sort='oldest')}" 
+                   th:class="${currentSort == 'oldest'} ? 'btn btn-sort active' : 'btn btn-sort'">
+                    古い順
+                </a>
+                <a th:href="@{/bookmarks(sort='title')}" 
+                   th:class="${currentSort == 'title'} ? 'btn btn-sort active' : 'btn btn-sort'">
+                    タイトル順
+                </a>
+                <a th:href="@{/bookmarks(sort='favorites')}" 
+                   th:class="${currentSort == 'favorites'} ? 'btn btn-sort active' : 'btn btn-sort'">
+                    お気に入りのみ
+                </a>
+            </div>
+        </div>
+        
+        <div class="bookmarks-list" th:if="${#lists.isEmpty(bookmarks)}">
+            <p class="empty-message">ブックマークがありません。新規作成してください。</p>
+        </div>
+        
+        <div class="bookmarks-list" th:if="${not #lists.isEmpty(bookmarks)}">
+            <div class="bookmark-card" th:each="bookmark : ${bookmarks}">
+                <div class="bookmark-header">
+                    <h3 th:text="${bookmark.title}"></h3>
+                    <form th:action="@{/bookmarks/{id}/favorite(id=${bookmark.id})}" 
+                          method="post" style="display:inline;">
+                        <button type="submit" class="btn-favorite" 
+                                th:classappend="${bookmark.isFavorite} ? 'favorite' : ''">
+                            ★
+                        </button>
+                    </form>
+                </div>
+                
+                <p class="bookmark-url">
+                    <a th:href="${bookmark.url}" target="_blank" th:text="${bookmark.url}"></a>
+                </p>
+                
+                <p class="bookmark-description" 
+                   th:if="${bookmark.description != null and !#strings.isEmpty(bookmark.description)}"
+                   th:text="${bookmark.description}"></p>
+                
+                <p class="bookmark-date">
+                    作成日: <span th:text="${#temporals.format(bookmark.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
+                </p>
+                
+                <div class="bookmark-actions">
+                    <a th:href="@{/bookmarks/{id}/edit(id=${bookmark.id})}" 
+                       class="btn btn-edit">編集</a>
+                    <form th:action="@{/bookmarks/{id}/delete(id=${bookmark.id})}" 
+                          method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-delete" 
+                                onclick="return confirm('本当に削除しますか?');">
+                            削除
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
